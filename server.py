@@ -3,7 +3,7 @@ import threading
 import pickle
 import random
 
-HOST = '10.11.29.81'
+HOST = socket.gethostname(socket.gethostbyname())
 PORT = 5050
 
 objects = []
