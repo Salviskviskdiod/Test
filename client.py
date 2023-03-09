@@ -8,7 +8,7 @@ def create_thread(target):
     thread.start()
 
 
-HOST = '10.11.29.81'
+HOST = 'input("IP > ")'
 PORT = 5050
 
 connection_established=False
