@@ -4,8 +4,8 @@ import pickle
 import random
 import codecs
 
-HOST = socket.gethostbyname(socket.gethostname())
-PORT = 5050
+HOST = "localhost"
+PORT = 9999
 
 class Account:
     def __init__(self, username: str, password: str):
@@ -15,20 +15,28 @@ class Account:
         self.points = 0
         self.ppc = 1
         self.pps = 0
-        self.ppc_u = 1
-        self.cient = None
+        self.client = None
+class Item:
+    def __init__(self, ppc):
+        self.ppc = ppc
+banana = Item(1.3)
 
-if input("Load Y / N > ").lower() == "y":
-    with open("save.txt", "r") as f:
-        accounts = pickle.loads(codecs.decode(f.read().encode(), "base64"))
-        print(accounts.points)
-        for x in accounts:
-            print(x.__dict__)
-else:
-    xalvass = Account("Xalvass", "Gurka")
-    jennie = Account("jennie", "jennie")
+#if input("Load Y / N > ").lower() == "y":
+   # with open("save.txt", "r") as f:
+   #     accounts = pickle.loads(codecs.decode(f.read().encode(), "base64"))
+    #    print(accounts.points)
+     #   for x in accounts:
+       #     print(x.__dict__)
+#else:
+ #   xalvass = Account("Xalvass", "Gurka")
+  #  jennie = Account("jennie", "jennie")
 
-    accounts = [xalvass, jennie]
+   # accounts = [xalvass, jennie]
+
+xalvass = Account("Xalvass", "Gurka")
+jennie = Account("jennie", "jennie")
+
+accounts = [xalvass, jennie]
 
 server = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
 server.bind((HOST, PORT))
@@ -36,6 +44,7 @@ server.bind((HOST, PORT))
 server.listen()
 
 def sec1():
+    global accounts
     while True:
         time.sleep(1)
       #  with open("save.txt", "w") as f:
@@ -48,6 +57,9 @@ def sec1():
             #    new.append(a)
             #f.write(codecs.encode(pickle.dumps(new), "base64").decode())
         for account in accounts:
+            if account.online:
+                send_data='{}-{}-{}-{}'.format("Info", codecs.encode(pickle.dumps([account.points, account.ppc, account.pps]), "base64").decode(), None, None).encode()
+                account.client.send(send_data)
             account.points += account.pps
 
 sec1_thread = threading.Thread(target=sec1)
@@ -70,40 +82,30 @@ def handle(client, address):
                 if data[0] == 'Points':
                     account.points += account.ppc
                 if data[0] == "GetInfo":
-                    send_data='{}-{}-{}-{}'.format("GetInfo", codecs.encode(pickle.dumps([account.points, account.ppc, account.pps, account.ppc_u]), "base64").decode(), None, None).encode()
+                    send_data='{}-{}-{}-{}'.format("GetInfo", codecs.encode(pickle.dumps([account.points, account.ppc, account.pps]), "base64").decode(), None, None).encode()
                     client.send(send_data)
                 if data[0] == "Leaderboard":
                     leaderboard = sorted(accounts, key=lambda x: x.points, reverse=True)
                     new = ""
                     for x in leaderboard:
-                        new += f"{x.username}: Points: {x.points}    Ppc: {x.ppc}\n"
+                        new += f"{x.username}: Points: {x.points}    Ppc: {x.ppc}    PPs: {x.pps}\n"
                     send_data='{}-{}-{}-{}'.format("Leaderboard", new, None, None).encode()
                     client.send(send_data)
                 if data[0] == "Buy Ppc":
-                    if account.points >= (20 - account.ppc_u) * int(data[1]):
-                        account.points -= (20 - account.ppc_u) * int(data[1])
+                    if account.points >= 20 * int(data[1]):
+                        account.points -= 20 * int(data[1])
                         account.ppc += int(data[1])
                 if data[0] == "Buy Pps":
                     if account.points >= 50 * int(data[1]):
                         account.points -= 50 * int(data[1])
                         account.pps += int(data[1])
-                if data[0] == "Get Cheaper Ppc":
-                    if account.ppc_u < 20:
-                        i = 1
-                        for x in range(account.ppc_u):
-                            i *= 1.5
-                        if account.points >= 5000 * i:
-                            account.points = 0
-                            account.ppc = 0
-                            account.pps = 0
-                            account.ppc_u += 1
             else:
                 if data[0] == "Login":
                     for x in accounts:
                         if x.username == data[1] and x.password == data[2]:
                             account = x
                             account.online = True
-                            account.cient = client
+                            account.client = client
                             send_data='{}-{}-{}-{}'.format("Login", None, None, None).encode()
                             client.send(send_data)
                             print(f"Client {address} Logged into account {account.username}")
