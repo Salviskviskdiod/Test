@@ -2,15 +2,15 @@ import os,sys, time, pickle
 import socket
 import threading
 from getpass import getpass
-import codecs
+import codecs, math
 
 def create_thread(target):
     thread=threading.Thread(target=target)
     thread.daemon=True
     thread.start()
 
-HOST = input("IP: ")
-PORT = 5050
+HOST = f"{input('Num: ')}.tcp.eu.ngrok.io"
+PORT = int(input("PORT: "))
 
 connection_established=False
 sock=socket.socket(socket.AF_INET,socket.SOCK_STREAM)
@@ -24,15 +24,19 @@ running = True
 
 account = None
 
+class Account:
+    def __init__(self):
+        self.points = None
+        self.ppc = None
+        self.pps = None
+        self.dict = {0 : "points", 1 : "ppc", 2: "pps"}
+
 def receive_data():
     global turn,connection_established, running, account
     while True:
         #try:
             data=sock.recv(1024).decode("utf-8")
             data=data.split('-')
-            if data[0] == "GetInfo":
-                a = pickle.loads(codecs.decode(data[1].encode(), "base64"))
-                input(f"Points: {a[0]}\nPpc: {a[1]}\nPps: {a[2]}\nPPc_u: {a[3]}")
             if data[0] == "Connected":
                 input("Connected to server")
             if data[0] == "Login":
@@ -42,6 +46,11 @@ def receive_data():
                 break
             if data[0] == "Leaderboard":
                 input(data[1])
+            if data[0] == "Info":
+                a = pickle.loads(codecs.decode(data[1].encode(), "base64"))
+                account = Account()
+                for i, x in enumerate(a):
+                    setattr(account, account.dict[i], int(x))
         #except:
          #   print("ahh")
 
@@ -54,7 +63,7 @@ while running:
         time.sleep(0.2)
         user_input = input("> ")
         if user_input == "Help":
-            input("Login: Login to An Account\nGet: Get Your Points\nBuy: Buys extra Ppc (Cost: 20p) or Pps (Cost: 50p)\n")
+            input("Login: Login to An Account\nGet: Get Your Points\nBuy: Buy more Ppc (Cost: 20p) or Pps (Cost: 50p)\n")
         if not login:
             if user_input == "Login":
                 send_data='{}-{}-{}-{}'.format("Login", input("Username: "), getpass(), None).encode()
@@ -62,20 +71,19 @@ while running:
                 login = True
         else:
             if user_input == "Buy":
-                user_input = input("1: Buy Ppc\n2: Buy Pps\n3: Get Cheaper Ppc (RESETS your points and ppc)\n> ")
+                user_input = input("1: Buy Ppc\n2: Buy Pps\n> ")
                 if user_input == "1":
-                    send_data='{}-{}-{}-{}'.format("Buy Ppc", input("Num > "), None, None).encode()
+                    i = math.floor(account.points / 20)
+                    send_data='{}-{}-{}-{}'.format("Buy Ppc", input(f"Num (Max: {i}): "), None, None).encode()
                     sock.send(send_data)
                 if user_input == "2":
-                    send_data='{}-{}-{}-{}'.format("Buy Pps", input("Num > "), None, None).encode()
-                    sock.send(send_data)
-                if user_input == "3":
-                    send_data='{}-{}-{}-{}'.format("Get Cheaper Ppc", None, None, None).encode()
-                    sock.send(send_data)            
+                    i = math.floor(account.points / 50)
+                    send_data='{}-{}-{}-{}'.format("Buy Pps", input(f"Num (Max: {i}): "), None, None).encode()
+                    sock.send(send_data)           
                 continue
             elif user_input == "Get":
-                send_data='{}-{}-{}-{}'.format("GetInfo", None, None, None).encode()
-                sock.send(send_data)
+                if not account == None:
+                    input(f"Points: {account.points}\nPpc: {account.ppc}\nPps: {account.pps}")
             elif user_input == "Leaderboard":
                 send_data='{}-{}-{}-{}'.format("Leaderboard", None, None, None).encode()
                 sock.send(send_data)
