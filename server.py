@@ -7,6 +7,8 @@ import codecs
 HOST = "localhost"
 PORT = 9999
 
+accounts = []
+
 class Account:
     def __init__(self, username: str, password: str):
         self.online = False
@@ -16,8 +18,10 @@ class Account:
         self.ppc = 1
         self.pps = 0
         self.client = None
+        accounts.append(self)
 class Item:
-    def __init__(self, ppc):
+    def __init__(self, name, ppc):
+        self.name = name
         self.ppc = ppc
 banana = Item(1.3)
 
@@ -32,11 +36,6 @@ banana = Item(1.3)
   #  jennie = Account("jennie", "jennie")
 
    # accounts = [xalvass, jennie]
-
-xalvass = Account("Xalvass", "Gurka")
-jennie = Account("jennie", "jennie")
-
-accounts = [xalvass, jennie]
 
 server = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
 server.bind((HOST, PORT))
