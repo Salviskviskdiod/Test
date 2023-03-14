@@ -24,7 +24,6 @@ class Item:
         self.name = name
         self.ppc = ppc
 banana = Item(1.3)
-
 #if input("Load Y / N > ").lower() == "y":
    # with open("save.txt", "r") as f:
    #     accounts = pickle.loads(codecs.decode(f.read().encode(), "base64"))
@@ -32,10 +31,7 @@ banana = Item(1.3)
      #   for x in accounts:
        #     print(x.__dict__)
 #else:
- #   xalvass = Account("Xalvass", "Gurka")
-  #  jennie = Account("jennie", "jennie")
 
-   # accounts = [xalvass, jennie]
 
 server = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
 server.bind((HOST, PORT))
