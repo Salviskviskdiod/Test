@@ -23,7 +23,13 @@ class Item:
     def __init__(self, name, ppc):
         self.name = name
         self.ppc = ppc
-banana = Item(1.3)
+class Box:
+    __init__(self, name, cost, contents):
+        self.name = name
+        self.cost = cost
+        self.contents = contents
+banana = Item("Banana", 1.3)
+box1 = Box("Box1", 100000, {banana : [1, 10000]})
 #if input("Load Y / N > ").lower() == "y":
    # with open("save.txt", "r") as f:
    #     accounts = pickle.loads(codecs.decode(f.read().encode(), "base64"))
@@ -94,6 +100,11 @@ def handle(client, address):
                     if account.points >= 50 * int(data[1]):
                         account.points -= 50 * int(data[1])
                         account.pps += int(data[1])
+                if data[0] == "Open":
+                    for x in boxes:
+                        if x.name == data[1]:
+                            box = x
+                            break
             else:
                 if data[0] == "Login":
                     for x in accounts:
